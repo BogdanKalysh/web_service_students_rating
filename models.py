@@ -8,8 +8,9 @@ from werkzeug.security import generate_password_hash
 engine = create_engine("postgresql://postgres:postgresqlpass@localhost/rating", echo = True)
 Session = sessionmaker(bind=engine)
 
-
 Base = declarative_base()
+
+
 
 teacher_group = Table('teacher_group', Base.metadata,
     Column('teacher_id', Integer, ForeignKey('users.id')),

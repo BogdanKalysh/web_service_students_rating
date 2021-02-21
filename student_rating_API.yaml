@@ -1,351 +1,419 @@
----
 openapi: 3.0.0
 info:
+  version: 1.0.0
   title: Students Rating
   description: An API that allows to see information about students marks, put new marks or post information about new students
   contact:
-    name: Bogdan Kalysh
     email: bogdankalysh20@gmail.com
-  version: 1.0.0
-servers:
-- url: /
+    name: Bogdan Kalysh
+
 tags:
-- name: user
-- name: student
-- name: teacher
-paths:
-  /user/login:
-    get:
-      tags:
-      - user
-      description: autentification of a user
-      parameters:
-      - name: email
-        in: query
-        description: The user name for login
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
-      - name: password
-        in: query
-        description: The password for login in clear text
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: Logged in
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-        "400":
-          description: Invalid username/password supplied
-  /user/logout:
-    get:
-      tags:
-      - user
-      description: logs out user
-      responses:
-        default:
-          description: successful operation
-  /user/create:
-    post:
-      tags:
-      - user
-      description: creates a user
-      operationId: createUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/user'
-      responses:
-        "200":
-          description: Signed up
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-        "400":
-          description: You didn't fill all fields
-      security:
-      - student_rating_auth:
-        - admin:rights
-  /students:
-    get:
-      tags:
-      - student
-      description: Obtain information about all students
-      responses:
-        "200":
-          description: Sucessfully pulled students info
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
+  - name: user
+  - name: student
+  - name: teacher
+
+paths: 
+    /user/login:
+      get:
+        tags:
+          - user
+        description: autentification of a user
+        parameters:
+        - name: email
+          in: query
+          description: The user name for login
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: true
+          schema:
+            type: string
+        responses:
+          200:
+            description: Logged in
+            content:
+              application/json:
+                schema:
                   $ref: '#/components/schemas/user'
-        "400":
-          description: An Error occured
-      security:
-      - student_rating_auth:
-        - read:students
-    post:
-      tags:
-      - student
-      description: Add a new student to the db
-      requestBody:
-        content:
-          application/json:
+          400:
+            description: Invalid username/password supplied
+            
+    /user/logout:
+      get:
+        tags:
+          - user
+        description: logs out user
+        responses:
+          default:
+            description: successful operation
+            
+    /user/create:
+      post:
+        tags:
+          - user
+        description: creates a user
+        operationId: createUser
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        responses:
+          200:
+            description: Signed up
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/user'
+          400:
+            description: You didn't fill all fields
+        security:
+          - student_rating_auth:
+            - 'admin:rights'
+            
+    /students:
+      get:
+        tags:
+          - student
+        description: Obtain information about all students
+        responses:
+          200:
+            description: Sucessfully pulled students info
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/user'
+          400:
+            description: An Error occured
+        security:
+          - student_rating_auth:
+            - 'read:students'
+      post:
+        tags:
+          - student
+        description: Add a new student to the db               
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        responses:
+          200:
+            description: Successfully added a new student to the db
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/user'
+          400:
+            description: Wrong student obj
+        security:
+          - student_rating_auth:
+            - 'admin:rights'
+            
+    /students/top/{quant}:
+      get:
+        tags:
+          - student
+        description: Obtain information about top students
+        parameters: 
+          - in: path 
+            name: quant
+            description: Quantity of top students to return
+            required: true
             schema:
-              $ref: '#/components/schemas/user'
-        required: true
-      responses:
-        "200":
-          description: Successfully added a new student to the db
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-        "400":
-          description: Wrong student obj
-      security:
-      - student_rating_auth:
-        - admin:rights
-  /students/top/{quant}:
-    get:
-      tags:
-      - student
-      description: Obtain information about top students
-      parameters:
-      - name: quant
-        in: path
-        description: Quantity of top students to return
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-      responses:
-        "200":
-          description: Sucessfully returned info about top students
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/rating'
-        "400":
-          description: An ERROR occured
-      security:
-      - student_rating_auth:
-        - read:students
-  /students/{id}:
-    get:
-      tags:
-      - student
-      description: Obtain info about specific student
-      parameters:
-      - name: id
-        in: path
-        description: The id of specific student
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-      responses:
-        "200":
-          description: Sucessfully obtained information about the student
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-        "400":
-          description: Wrong ID
-      security:
-      - student_rating_auth:
-        - read:students
-    put:
-      tags:
-      - student
-      description: Update a student
-      parameters:
-      - name: id
-        in: path
-        description: The id of specific student
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-      requestBody:
-        content:
-          application/json:
+              type: integer
+        responses:
+          200:
+            description: Sucessfully returned info about top students
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/rating'
+          400:
+            description: An ERROR occured
+        security:
+          - student_rating_auth:
+            - 'read:students'
+            
+    /student/{id}:
+      get:
+        tags:
+          - student
+        description: Obtain info about specific student
+        parameters:
+          - in: path
+            name: id
+            description: The id of specific student
+            required: true
             schema:
-              $ref: '#/components/schemas/user'
-        required: true
-      responses:
-        "200":
-          description: Sucessfully updated information about the student
+              type: integer
+        responses:
+          200:
+            description: Sucessfully obtained information about the student
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/user'
+          400:
+            description: Wrong ID
+        security:
+          - student_rating_auth:
+            - 'read:students'
+      put:
+        tags:
+          - student
+        description: Update a student
+        parameters:
+          - in: path 
+            name: id
+            description: The id of specific student
+            required: true
+            schema:
+              type: integer
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/user'
-        "400":
-          description: Wrong ID
-      security:
-      - student_rating_auth:
-        - write:students
-        - read:students
-    delete:
-      tags:
-      - student
-      description: delete a student
-      parameters:
-      - name: id
-        in: path
-        description: The id of specific student
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-      responses:
-        "200":
-          description: Sucessfully deleted a student
-        "400":
-          description: Wrong ID
-      security:
-      - student_rating_auth:
-        - write:students
-        - read:students
-  /students/{id}/{mark}:
-    put:
-      tags:
-      - student
-      description: put a mark to a student
-      parameters:
-      - name: id
-        in: path
-        description: The id of specific student
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-      - name: mark
-        in: path
-        description: The mark given to the the student
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-      responses:
-        "200":
-          description: Sucessfully added the mark
+        responses:
+          200:
+            description: Sucessfully updated information about the student
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/user'
+          400:
+            description: Wrong ID
+            
+        security:
+          - student_rating_auth:
+            - 'write:students'
+            - 'read:students'        
+      delete:
+        tags:
+        - student
+        description: delete a student
+        parameters:
+        - in: path 
+          name: id
+          description: The id of specific student
+          required: true
+          schema:
+            type: integer
+            
+        responses:
+          200:
+            description: Sucessfully deleted a student
+          400:
+            description: Wrong ID
+            
+        security:  
+          - student_rating_auth: 
+            - 'write:students'
+            - 'read:students' 
+            
+    /student/mark:
+      post:
+        tags:
+          - student
+        description: put a mark to a student
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/mark'
-        "400":
-          description: Wrong ID
-      security:
-      - student_rating_auth:
-        - write:students
-        - read:students
-  /teacher/add/subject/{id}:
-    put:
-      tags:
-      - teacher
-      description: add a subject to a teacher
-      parameters:
-      - name: id
-        in: path
-        description: The id of specific subject
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-      responses:
-        "200":
-          description: Sucessfully added the mark
+        responses:
+          200:
+            description: Sucessfully added the mark 
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/mark'
+          400:
+            description: Wrong ID
+      
+            
+        security:
+          - student_rating_auth:
+            - 'write:students'
+            - 'read:students'
+            
+    /student/mark/{id}:
+      put:
+        tags:
+          - student
+        description: put a mark to a student
+        parameters:
+          - in: path 
+            name: id
+            description: The id of specific student
+            required: true
+            schema:
+              type: integer
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/user'
-        "400":
-          description: Wrong ID
-      security:
-      - student_rating_auth:
-        - admin:rights
-  /teacher/add/group/{id}:
-    put:
-      tags:
-      - teacher
-      description: add a group to a teacher
-      parameters:
-      - name: id
-        in: path
-        description: The id of specific group
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: integer
-      responses:
-        "200":
-          description: Sucessfully added the group
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-        "400":
-          description: Wrong ID
-      security:
-      - student_rating_auth:
-        - admin:rights
+                $ref: '#/components/schemas/mark'
+        responses:
+          200:
+            description: Sucessfully updated the mark 
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/mark'
+          400:
+            description: Wrong ID
+      
+            
+        security:
+          - student_rating_auth:
+            - 'write:students'
+            - 'read:students'
+      delete:
+        tags:
+        - student
+        description: delete a student
+        parameters:
+        - in: path 
+          name: id
+          description: The id of specific mark
+          required: true
+          schema:
+            type: integer
+            
+        responses:
+          200:
+            description: Sucessfully deleted the mark
+          400:
+            description: Wrong ID
+            
+        security:  
+          - student_rating_auth: 
+            - 'write:students'
+            - 'read:students' 
+            
+    /teacher/{teacher_id}/add/subject/{subject_id}:
+      put:
+        tags:
+          - teacher
+        description: add a subject to a teacher
+        parameters:
+          - in: path 
+            name: subject_id
+            description: The id of specific subject
+            required: true
+            schema:
+              type: integer
+          - in: path 
+            name: teacher_id
+            description: The id of specific subject
+            required: true
+            schema:
+              type: integer
+        responses:
+          200:
+            description: Sucessfully added the mark 
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/user'
+          400:
+            description: Wrong ID
+            
+        security:
+          - student_rating_auth:
+            - 'admin:rights'
+            
+    /teacher/{teacher_id}/add/group/{group_id}:
+      put:
+        tags:
+          - teacher
+        description: add a group to a teacher
+        parameters:
+          - in: path 
+            name: teacher_id
+            description: The id of specific group
+            required: true
+            schema:
+              type: integer
+          - in: path 
+            name: group_id
+            description: The id of specific group
+            required: true
+            schema:
+              type: integer
+        responses:
+          200:
+            description: Sucessfully added the group
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/user'
+          400:
+            description: Wrong ID
+            
+        security:
+          - student_rating_auth:
+            - 'admin:rights'
+            
+            
 components:
   schemas:
     user:
       type: object
+      
+      description: Model containing user info
       properties:
         id:
           type: integer
+                        
         name:
           type: string
+                        
         email:
           type: string
+          
         password:
           type: string
+          
         type_of_user:
           type: string
+          
         group_id:
           type: integer
-      description: Model containing user info
+            
     mark:
       type: object
+      
+      description: Model containing mark info
       properties:
         id:
           type: integer
         date:
           type: number
+        mark:
+          type: integer
         subject_id:
           type: integer
         student_id:
           type: integer
-        teacher_id:
-          type: integer
-      description: Model containing mark info
+              
     rating:
       type: object
+      
+      description: Model containing students rating info
       properties:
         student_id:
           type: integer
@@ -355,14 +423,14 @@ components:
           type: string
         mark:
           type: integer
-      description: Model containing students rating info
+          
   securitySchemes:
     student_rating_auth:
       type: oauth2
       flows:
         implicit:
-          authorizationUrl: http://student.rating.io/oauth/dialog
+          authorizationUrl: 'http://student.rating.io/oauth/dialog'
           scopes:
-            write:students: modify students info
-            read:students: read info about students
-            admin:rights: read info about students
+            'write:students': modify students info
+            'read:students': read info about students
+            'admin:rights': read info about students

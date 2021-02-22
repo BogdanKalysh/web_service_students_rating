@@ -9,6 +9,8 @@ info:
 
 tags:
   - name: user
+  - name: group
+  - name: subject
   - name: student
   - name: teacher
 
@@ -50,7 +52,7 @@ paths:
           default:
             description: successful operation
             
-    /user/create:
+    /user:
       post:
         tags:
           - user
@@ -74,6 +76,184 @@ paths:
           - student_rating_auth:
             - 'admin:rights'
             
+    /user/{id}:
+      put:
+        tags:
+          - user
+        description: Update a user
+        parameters:
+          - in: path 
+            name: id
+            description: The id of specific user
+            required: true
+            schema:
+              type: integer
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        responses:
+          200:
+            description: Sucessfully updated information about the user
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/user'
+          400:
+            description: Wrong ID
+            
+        security:
+          - student_rating_auth:
+            - 'admin:rights'       
+      delete:
+        tags:
+        - user
+        description: delete a user
+        parameters:
+        - in: path 
+          name: id
+          description: The id of specific user
+          required: true
+          schema:
+            type: integer
+            
+        responses:
+          200:
+            description: Sucessfully deleted a user
+          400:
+            description: Wrong ID
+            
+        security:  
+          - student_rating_auth: 
+            - 'admin:rights'
+            
+    /group:
+      post:
+        tags:
+          - group
+        description: creates a group
+        operationId: createGroup
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/group'
+        responses:
+          200:
+            description: Created student
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/group'
+          400:
+            description: You didn't fill all fields
+        security:
+          - student_rating_auth:
+            - 'admin:rights'
+            
+    /group/{id}:
+      put:
+        tags:
+          - group
+        description: Update a group
+        parameters:
+          - in: path 
+            name: id
+            description: The id of specific group
+            required: true
+            schema:
+              type: integer
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/group'
+        responses:
+          200:
+            description: Sucessfully updated information about the group
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/group'
+          400:
+            description: Wrong ID
+            
+        security:
+          - student_rating_auth:
+            - 'admin:rights'      
+      delete:
+        tags:
+        - group
+        description: delete a group
+        parameters:
+        - in: path 
+          name: id
+          description: The id of specific group
+          required: true
+          schema:
+            type: integer
+            
+        responses:
+          200:
+            description: Sucessfully deleted a group
+          400:
+            description: Wrong ID
+            
+        security:  
+          - student_rating_auth: 
+            - 'admin:rights'
+            
+            
+    /subject:
+      post:
+        tags:
+          - subject
+        description: creates a subject
+        operationId: createSubject
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/subject'
+        responses:
+          200:
+            description: Created student
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/subject'
+          400:
+            description: You didn't fill all fields
+        security:
+          - student_rating_auth:
+            - 'admin:rights'
+            
+    /subject/{id}:
+      delete:
+        tags:
+        - subject
+        description: delete a subject
+        parameters:
+        - in: path 
+          name: id
+          description: The id of specific subject
+          required: true
+          schema:
+            type: integer
+            
+        responses:
+          200:
+            description: Sucessfully deleted a subject
+          400:
+            description: Wrong ID
+            
+        security:  
+          - student_rating_auth: 
+            - 'admin:rights'
+            
     /students:
       get:
         tags:
@@ -93,28 +273,6 @@ paths:
         security:
           - student_rating_auth:
             - 'read:students'
-      post:
-        tags:
-          - student
-        description: Add a new student to the db               
-        requestBody:
-          required: true
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-        responses:
-          200:
-            description: Successfully added a new student to the db
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/user'
-          400:
-            description: Wrong student obj
-        security:
-          - student_rating_auth:
-            - 'admin:rights'
             
     /students/top/{quant}:
       get:
@@ -167,59 +325,6 @@ paths:
         security:
           - student_rating_auth:
             - 'read:students'
-      put:
-        tags:
-          - student
-        description: Update a student
-        parameters:
-          - in: path 
-            name: id
-            description: The id of specific student
-            required: true
-            schema:
-              type: integer
-        requestBody:
-          required: true
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-        responses:
-          200:
-            description: Sucessfully updated information about the student
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/user'
-          400:
-            description: Wrong ID
-            
-        security:
-          - student_rating_auth:
-            - 'write:students'
-            - 'read:students'        
-      delete:
-        tags:
-        - student
-        description: delete a student
-        parameters:
-        - in: path 
-          name: id
-          description: The id of specific student
-          required: true
-          schema:
-            type: integer
-            
-        responses:
-          200:
-            description: Sucessfully deleted a student
-          400:
-            description: Wrong ID
-            
-        security:  
-          - student_rating_auth: 
-            - 'write:students'
-            - 'read:students' 
             
     /student/mark:
       post:
@@ -424,6 +529,26 @@ components:
         mark:
           type: integer
           
+    group:
+      type: object
+      
+      description: Model containing group info
+      properties:
+        student_id:
+          type: integer
+        name:
+          type: string
+          
+    subject:
+      type: object
+      
+      description: Model containing subject info
+      properties:
+        student_id:
+          type: integer
+        name:
+          type: string
+
   securitySchemes:
     student_rating_auth:
       type: oauth2

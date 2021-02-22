@@ -209,6 +209,14 @@ def delete_group(id):
             if(orig_group == None):
                 return(jsonify({"error": "Group with this id does not exist"})), 403
 
+            group_student = session.query(users).filter(users.group_id == id).first()
+            if(group_student != None):
+                return(jsonify({"error": "Group contains students, can't be deleted"})), 403
+
+            for teacher in orig_group.teachers:
+                orig_group.teachers.remove(teacher)
+            session.commit()
+
             session.query(groups).filter(groups.id == id).delete()
 
             session.commit()
@@ -217,7 +225,7 @@ def delete_group(id):
     except Exception:
         return(jsonify({"code":401,"error":"wrong data"})), 401
     
-    return jsonify({"Successfully deleted group" : orig_group.name , "id" : id}), 200
+    return jsonify({"Successfully deleted group, id " : id}), 200
 
 
 
@@ -260,15 +268,22 @@ def delete_subject(id):
             if(orig_subject == None):
                 return(jsonify({"error": "Subject with this id does not exist"})), 403
 
-            session.query(subjects).filter(subjects.id == id).delete()
+            subject_mark = session.query(marks).filter(marks.subject_id == id).first()
+            if(subject_mark != None):
+                return(jsonify({"error": "There are marks from this subject, can't be deleted"})), 403
 
+            for user in orig_subject.users:
+                orig_subject.users.remove(user)
+            session.commit()
+            
+            session.query(subjects).filter(subjects.id == id).delete()
             session.commit()
         else:
             return(jsonify({"error": "no access to deleting subjects"})), 403
     except Exception:
         return(jsonify({"code":401,"error":"wrong data"})), 401
     
-    return jsonify({"Successfully deleted subject" : orig_subject.name , "id" : id}), 200
+    return jsonify({"Successfully deleted subject, id " : id}), 200
 
 
 
@@ -511,16 +526,16 @@ def update_mark_to_student(id):
             summ = 0
 
             all_marks = session.query(marks).filter(marks.student_id == mark_obj.student_id).all()
+            if(all_marks != []):
+                for mark_obj in all_marks:
+                    summ += mark_obj.mark
+                summ /= len(all_marks)
 
-            for mark_obj in all_marks:
-                summ += mark_obj.mark
-            summ /= len(all_marks)
+                new_rating_obj = rating(rating_obj.student_id, rating_obj.student_name, rating_obj.group_name, summ)
+                session.query(rating).filter(rating.student_id == mark_obj.student_id).delete()
+                session.add(new_rating_obj)
 
-            new_rating_obj = rating(rating_obj.student_id, rating_obj.student_name, rating_obj.group_name, summ)
-            session.query(rating).filter(rating.student_id == mark_obj.student_id).delete()
-            session.add(new_rating_obj)
-
-            session.commit()
+                session.commit()
 
         else:
             return(jsonify({"error": "no access to deleting marks"})), 403

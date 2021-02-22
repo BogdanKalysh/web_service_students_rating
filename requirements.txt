@@ -1,0 +1,6 @@
+flask
+marshmallow
+sqlalchemy
+werkzeug
+alembic
+flask_httpauth

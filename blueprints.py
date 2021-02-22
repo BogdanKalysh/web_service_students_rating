@@ -221,6 +221,9 @@ def delete_group(id):
 
 
 
+
+
+
 @blueprint.route("/subject", methods = ["POST"])
 @auth.login_required
 def add_subject():
@@ -266,6 +269,8 @@ def delete_subject(id):
         return(jsonify({"code":401,"error":"wrong data"})), 401
     
     return jsonify({"Successfully deleted subject" : orig_subject.name , "id" : id}), 200
+
+
 
 
 
@@ -435,7 +440,7 @@ def add_mark_to_student():
                 return(jsonify({"error": "you can not give marks to this group students"})), 403
 
             session.add(mark_obj)
-            # session.commit()
+            session.commit()
 
             rating_obj = session.query(rating).filter(rating.student_id == mark_obj.student_id).first()
 
@@ -499,6 +504,22 @@ def update_mark_to_student(id):
                 return(jsonify({"error": "you can not delete marks of this group students"})), 403
 
             session.query(marks).filter(marks.id == id).delete()
+            session.commit()
+
+            rating_obj = session.query(rating).filter(rating.student_id == mark_obj.student_id).first()
+
+            summ = 0
+
+            all_marks = session.query(marks).filter(marks.student_id == mark_obj.student_id).all()
+
+            for mark_obj in all_marks:
+                summ += mark_obj.mark
+            summ /= len(all_marks)
+
+            new_rating_obj = rating(rating_obj.student_id, rating_obj.student_name, rating_obj.group_name, summ)
+            session.query(rating).filter(rating.student_id == mark_obj.student_id).delete()
+            session.add(new_rating_obj)
+
             session.commit()
 
         else:

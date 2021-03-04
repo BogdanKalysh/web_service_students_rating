@@ -18,6 +18,7 @@ def verify_password(email, password):
 
 
 
+
 @blueprint.route("/user", methods = ["POST"])
 @auth.login_required
 def add_user():
@@ -230,8 +231,6 @@ def delete_group(id):
 
 
 
-
-
 @blueprint.route("/subject", methods = ["POST"])
 @auth.login_required
 def add_subject():
@@ -284,8 +283,6 @@ def delete_subject(id):
         return(jsonify({"code":401,"error":"wrong data"})), 401
     
     return jsonify({"Successfully deleted subject, id " : id}), 200
-
-
 
 
 
